@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               Padding(padding: EdgeInsets.only(left: 50)),
               Text(
-                "Username",
+                "Email",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
@@ -127,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
            right: 50
            ),
           child: TextField(
+            obscureText: true,
             controller: password,
             decoration: InputDecoration(
               border: OutlineInputBorder(

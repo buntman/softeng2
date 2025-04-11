@@ -71,7 +71,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => DeliveryPage()))},
         ),
       ),
       body: Padding(

@@ -1,3 +1,4 @@
+import 'package:flowershop/pages/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -53,7 +54,7 @@ class _DeliveryPageState extends State<DeliveryPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => CartPage()))},
         ),
       ),
       body: Padding(

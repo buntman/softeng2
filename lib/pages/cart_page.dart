@@ -1,3 +1,4 @@
+import 'package:flowershop/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/delivery_page.dart';
@@ -32,7 +33,7 @@ class _CartPageState extends State<CartPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()))},
         ),
         actions: [
           IconButton(
@@ -74,7 +75,11 @@ class _CartPageState extends State<CartPage> {
                             icon: Icon(Icons.remove),
                             onPressed: () {
                               setState(() {
-                                if (item['quantity'] > 1) item['quantity']--;
+                               if (item['quantity'] > 1) {
+                                  item['quantity']--;
+                                } else {
+                                  cartItems.remove(item); 
+                                }
                               });
                             },
                           ),
