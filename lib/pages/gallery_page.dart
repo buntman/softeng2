@@ -1,10 +1,11 @@
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
 import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/home_page.dart';
 import 'package:flowershop/pages/notif_page.dart';
+import 'package:http/http.dart' as http;
 
 class GalleryPage extends StatefulWidget {
   const GalleryPage({super.key});
@@ -13,7 +14,44 @@ class GalleryPage extends StatefulWidget {
   State<GalleryPage> createState() => _GalleryPagestate();
 }
 
+
+class Bouquet {
+    final String name;
+    final double price;
+    final String imagePath;
+    
+    const Bouquet({required this.name, required this.price, required this.imagePath});
+
+    factory Bouquet.fromJson(Map<String,dynamic> json) {
+        return Bouquet(
+        name: json['name']?.toString() ?? 'Unknown',
+        price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+        imagePath: json['image_path']?.toString() ?? '',
+      );
+    }
+}
+
 class _GalleryPagestate extends State<GalleryPage> {
+      List<Bouquet> bouquets = [];
+
+      @override
+      void initState() {
+          super.initState();
+          fetchBouquets();
+      }
+
+      Future <void> fetchBouquets() async {
+            final response = await http.get(Uri.parse('http://10.0.2.2:8080/gallery'));
+            if(response.statusCode == 200) {
+                final List<dynamic> jsonData = json.decode(response.body);
+                 setState(() {
+                    bouquets = jsonData.map((item) => Bouquet.fromJson(item)).toList();
+                });
+            } else {
+                throw Exception('Failed to load bouquets');
+            }
+      }
+
 
   int _selectedIndex = 0; // Set the default selected index
 
@@ -32,15 +70,6 @@ class _GalleryPagestate extends State<GalleryPage> {
       }
     });
   }
-
-  final List<Map<String, String>> bouquets = [
-    {'name': 'Boquet No.1', 'image': 'lib/assets/images/rainbowrose.png', 'price': '₱650.00 PHP'},
-    {'name': 'Boquet No.2', 'image': 'lib/assets/images/smallvase.png', 'price': '₱650.00 PHP'},
-    {'name': 'Boquet No.3', 'image': 'lib/assets/images/tulipboq.png', 'price': '₱650.00 PHP'},
-    {'name': 'Boquet No.4', 'image': 'lib/assets/images/pinkboq.png', 'price': '₱650.00 PHP'},
-    {'name': 'Boquet No.5', 'image': 'lib/assets/images/smallboq.png', 'price': '₱650.00 PHP'},
-    {'name': 'Boquet No.6', 'image': 'lib/assets/images/yellowboq.png', 'price': '₱650.00 PHP'},
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +192,7 @@ class _GalleryPagestate extends State<GalleryPage> {
                 ),
                 itemCount: bouquets.length,
                 itemBuilder: (context, index) {
+                    final bouquet = bouquets[index];
                   return Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -172,8 +202,8 @@ class _GalleryPagestate extends State<GalleryPage> {
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                            child: Image.asset(
-                              bouquets[index]['image']!,
+                            child: Image.network(
+                              bouquet.imagePath,
                               fit: BoxFit.fitWidth,
                               width: double.infinity,
                             ),
@@ -183,9 +213,9 @@ class _GalleryPagestate extends State<GalleryPage> {
                           padding: EdgeInsets.all(8),
                           child: Column(
                             children: [
-                              Text(bouquets[index]['name']!, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                              Text(bouquet.name, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                               SizedBox(height: 5),
-                              Text(bouquets[index]['price']!, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                              Text('₱${bouquet.price.toStringAsFixed(2)}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
                               SizedBox(height: 5),
                               OutlinedButton(
                                 style: OutlinedButton.styleFrom(
@@ -198,7 +228,7 @@ class _GalleryPagestate extends State<GalleryPage> {
                               ),
                               onPressed: () {},
                               child: Text(
-                                'Shop Now',
+                                'Add to Cart',
                                 style: GoogleFonts.averiaSerifLibre(
                                 color: Color.fromRGBO(190, 54, 165, 1),
                                 fontSize: 10,
