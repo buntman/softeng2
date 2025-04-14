@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
 import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/gallery_page.dart';
 import 'package:flowershop/pages/notif_page.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,8 +14,46 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
 
+class Bouquet {
+    final String name;
+    final String description;
+    final double price;
+    final String imagePath;
+    
+    const Bouquet({required this.name, required this.description, required this.price, required this.imagePath});
+
+    factory Bouquet.fromJson(Map<String,dynamic> json) {
+        return Bouquet(
+        name: json['name']?.toString() ?? 'Unknown',
+        description: json['description']?.toString() ?? '',
+        price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+        imagePath: json['image_path']?.toString() ?? '',
+      );
+    }
+}
+
+
+class _HomePageState extends State<HomePage> {
+      List<Bouquet> bouquets = [];
+
+      @override
+      void initState() {
+          super.initState();
+          fetchBouquets();
+      }
+
+      Future <void> fetchBouquets() async {
+            final response = await http.get(Uri.parse('http://10.0.2.2:8080/home'));
+            if(response.statusCode == 200) {
+                final List<dynamic> jsonData = json.decode(response.body);
+                 setState(() {
+                    bouquets = jsonData.map((item) => Bouquet.fromJson(item)).toList();
+                });
+            } else {
+                throw Exception('Failed to load bouquets');
+            }
+      }
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -196,236 +236,60 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           Padding(padding: EdgeInsets.only(top: 10)),
-          Card(
-            elevation: 0,
-            color: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Image.asset(
-                    "lib/assets/images/redrose.png"
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: bouquets.length,
+            itemBuilder: (context, index) {
+                final bouquet = bouquets[index];
+                return Card(
+                    elevation: 0,
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                            children: [
+                            SizedBox(
+                                width: 100, // Set the size you want
+                                height: 100,
+                                child: Image.network(
+                                bouquet.imagePath,
+                                fit: BoxFit.cover,
+                                ),
+                                ),
+                                SizedBox(width: 10), // Spacing between image and content
+                                Expanded(
+                                    child:Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                            Text(
+                                            bouquet.name,
+                                            style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold
+                                                ),
+                                            ),
+                                            Padding(padding: EdgeInsets.only(top: 8)),
+                                             Text(bouquet.description,
+                                            style: GoogleFonts.inter(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w300
+                                            ),),
+                                            Padding(padding: EdgeInsets.only(top: 3)),
+                                             Text('₱${bouquet.price.toStringAsFixed(2)}',
+                                            style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400
+                                            ),),
+                                        ],
+                                    )
+                                )
+                            ],
+                        )
                     ),
-                    Padding(padding: EdgeInsets.only(left: 10)),
-                    SizedBox(
-                      width: 200,
-                      height: 90,
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("Boquet no.1",
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400
-                        ),),
-                        Text("Medium to Large size with premium sick\ngold and free greeting card",
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300
-                        ),),
-                        Text("₱ 650.00 PHP",
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold
-                        ),),
-                        SizedBox(
-                          width: 80,
-                          height: 22,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color.fromRGBO(190, 54, 165, 1), width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-                            minimumSize: Size(1, 5),
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            'Shop Now',
-                            style: GoogleFonts.averiaSerifLibre(
-                            color: Color.fromRGBO(190, 54, 165, 1),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300
-                            ),
-                          ),
-                          ),
-                        ),
-                      ],
-                    ),),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                Row(
-                  children: [
-                    Image.asset(
-                    "lib/assets/images/whiterose.png"
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 10)),
-                    SizedBox(
-                      width: 200,
-                      height: 90,
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("Boquet no.1",
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400
-                        ),),
-                        Text("Medium to Large size with premium sick\ngold and free greeting card",
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300
-                        ),),
-                        Text("₱ 650.00 PHP",
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold
-                        ),),
-                        SizedBox(
-                          width: 80,
-                          height: 22,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color.fromRGBO(190, 54, 165, 1), width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-                            minimumSize: Size(1, 5),
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            'Shop Now',
-                            style: GoogleFonts.averiaSerifLibre(
-                            color: Color.fromRGBO(190, 54, 165, 1),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300
-                            ),
-                          ),
-                          ),
-                        ),
-                      ],
-                    ),),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                Row(
-                  children: [
-                    Image.asset(
-                    "lib/assets/images/redrose.png"
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 10)),
-                    SizedBox(
-                      width: 200,
-                      height: 90,
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("Boquet no.1",
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400
-                        ),),
-                        Text("Medium to Large size with premium sick\ngold and free greeting card",
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300
-                        ),),
-                        Text("₱ 650.00 PHP",
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold
-                        ),),
-                        SizedBox(
-                          width: 80,
-                          height: 22,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color.fromRGBO(190, 54, 165, 1), width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-                            minimumSize: Size(1, 5),
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            'Shop Now',
-                            style: GoogleFonts.averiaSerifLibre(
-                            color: Color.fromRGBO(190, 54, 165, 1),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300
-                            ),
-                          ),
-                          ),
-                        ),
-                      ],
-                    ),),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                Row(
-                  children: [
-                    Image.asset(
-                    "lib/assets/images/whiterose.png"
-                    ),
-                    Padding(padding: EdgeInsets.only(left: 10)),
-                    SizedBox(
-                      width: 200,
-                      height: 90,
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("Boquet no.1",
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400
-                        ),),
-                        Text("Medium to Large size with premium sick\ngold and free greeting card",
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300
-                        ),),
-                        Text("₱ 650.00 PHP",
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold
-                        ),),
-                        SizedBox(
-                          width: 80,
-                          height: 22,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color.fromRGBO(190, 54, 165, 1), width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-                            minimumSize: Size(1, 5),
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            'Shop Now',
-                            style: GoogleFonts.averiaSerifLibre(
-                            color: Color.fromRGBO(190, 54, 165, 1),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300
-                            ),
-                          ),
-                          ),
-                        ),
-                      ],
-                    ),),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 25)),
+                );
+            },
+          ), 
+          Padding(padding: EdgeInsets.only(top: 10)),
                 Row(
                   children: [
                     Text("Gallery",
@@ -449,16 +313,19 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Row(
                   children: [
-                    Image.asset("lib/assets/images/rainbowrose.png"),
-                    Padding(padding: EdgeInsets.only(left: 25)),
-                    Image.asset("lib/assets/images/smallvase.png")
+                    SizedBox(
+                    width:150,
+                    child: Image.network('http://10.0.2.2:8080/images/inventory-items/sweetbouquet.jpg'),
+                    ),
+                    SizedBox(width: 40),
+                    SizedBox(
+                    width: 150,
+                    child: Image.network('http://10.0.2.2:8080/images/inventory-items/lavenderbouquet.jpg'),
+                    ),
                   ],
                 ),
               ],
             ),
-          )
-        ]
-      ),
-    );
+          );
   }
 }
