@@ -5,7 +5,9 @@ import 'package:flowershop/pages/cart_page.dart';
 import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/gallery_page.dart';
 import 'package:flowershop/pages/notif_page.dart';
+import 'package:flowershop/pages/token_storage.dart';
 import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,7 +46,11 @@ class _HomePageState extends State<HomePage> {
       }
 
       Future <void> fetchBouquets() async {
-            final response = await http.get(Uri.parse('http://10.0.2.2:8080/home'));
+            final token = await Token.getToken();
+            final response = await http.get(
+            Uri.parse('http://10.0.2.2:8080/home'),
+            headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+            );
             if(response.statusCode == 200) {
                 final List<dynamic> jsonData = json.decode(response.body);
                  setState(() {

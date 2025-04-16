@@ -3,7 +3,9 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/home_page.dart';
+import 'package:flowershop/pages/token_storage.dart';
 import 'package:http/http.dart' as http;
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -31,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final data = jsonDecode(response.body);
-
+    
     if (data["success"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -39,16 +41,18 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.green,
         ),
       );
+      await Token.storeToken(data["token"]);
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-    } else {
+    } else if(data["success"] == false){ //temporary validations
       ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("invalid input", style: TextStyle(color: Colors.white)),
+        content: Text('${data["errors"]["email"]}\n${data["errors"]["password"]}', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.red,
         ),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
