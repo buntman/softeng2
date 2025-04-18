@@ -2,6 +2,10 @@ import 'package:flowershop/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/delivery_page.dart';
+import 'package:flowershop/pages/token_storage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -10,19 +14,65 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
 
-  List<Map<String, dynamic>> cartItems = [
-    {'name': 'Tulip', 'price': 650, 'quantity': 1, 'image': 'lib/assets/images/tulip.png'},
-    {'name': 'Daffodil', 'price': 650, 'quantity': 1, 'extras': 'Extra wrapping', 'image': 'lib/assets/images/daffodil.png'},
-    {'name': 'White roses', 'price': 650, 'quantity': 1, 'image': 'lib/assets/images/white-rose.png'},
-    {'name': 'Red lily', 'price': 650, 'quantity': 1, 'extras': 'Extra wrapping, Extra Sponge', 'image': 'lib/assets/images/redlily.png'},
-    {'name': 'Bouquet No. 1', 'price': 650, 'quantity': 1, 'image': 'lib/assets/images/pinkboq.png'},
-  ];
-  
-  int getTotalPrice() {
-    return cartItems.fold<int>(0, (sum, item) => sum + (item['price'] as int) * (item['quantity'] as int));
-  }
+class CartItems {
+    final int cartId;
+    final String imagePath;
+    final String name;
+    final double price;
+    int quantity;
+
+    CartItems({required this.cartId, required this.imagePath, required this.name, required this.price, required this.quantity});
+
+    factory CartItems.fromJson(Map<String,dynamic>json) {
+        return CartItems(
+            cartId: json['cart_id'],
+            imagePath: json['image_path']?.toString() ?? '',
+            name: json['product_name']?.toString() ?? 'Unknown',
+            price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+            quantity: int.tryParse(json['quantity']?.toString() ?? '') ??  1,
+         );
+    }
+}
+
+class _CartPageState extends State<CartPage> {
+    List<CartItems> cartItems = [];
+
+    @override
+    void initState() {
+        super.initState();
+        fetchCartItems();
+    }
+
+    Future <void> fetchCartItems() async {
+        final token = await Token.getToken();
+        final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/cart'),
+        headers:{HttpHeaders.authorizationHeader: 'Bearer $token'},
+        );
+
+        if(response.statusCode == 200) {
+            final List<dynamic> jsonData = json.decode(response.body);
+            setState(() {
+                cartItems = jsonData.map((item) => CartItems.fromJson(item)).toList();
+            });
+        } else {
+            throw Exception('Failed to load items');
+        }
+    }
+
+
+    Future <void> deleteCartItem(CartItems item) async {
+        final token = await Token.getToken();
+        final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/cart/delete'),
+        headers: {HttpHeaders.authorizationHeader: 'Bearer $token',
+                HttpHeaders.contentTypeHeader: 'application/json'},
+        body: jsonEncode({
+            "cart_id" : item.cartId,
+            })
+        );
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -55,19 +105,22 @@ class _CartPageState extends State<CartPage> {
                       minTileHeight: 120,
                       leading: ClipRRect(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(2)),
-                            child: Image.asset(
-                              cartItems[index]['image']!,
-                              fit: BoxFit.fitHeight,
+                            child: SizedBox(
+                                width:100,
+                                height:100,
+                                child: Image.network(
+                                item.imagePath,
+                                fit: BoxFit.fitHeight,
+                            ),
                             ),
                           ),
                       title: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item['name'], style: TextStyle(fontSize: 18)),
-                          Text('${item['price']} php', style: TextStyle(fontSize: 18)),
+                          Text(item.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text('₱${item.price.toStringAsFixed(2)}', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                         ],
                       ),
-                      subtitle: item.containsKey('extras') ? Text(item['extras']) : null,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -75,21 +128,31 @@ class _CartPageState extends State<CartPage> {
                             icon: Icon(Icons.remove),
                             onPressed: () {
                               setState(() {
-                               if (item['quantity'] > 1) {
-                                  item['quantity']--;
+                               if (item.quantity > 1) {
+                                  item.quantity--;
                                 } else {
                                   cartItems.remove(item); 
                                 }
                               });
                             },
                           ),
-                          Text('${item['quantity']}', style: TextStyle(fontSize: 18)),
+                          Text('${item.quantity}', style: TextStyle(fontSize: 18)),
                           IconButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
                               setState(() {
-                                item['quantity']++;
+                                item.quantity++;
                               });
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            color: Colors.red,
+                            onPressed: (){
+                                setState(() {
+                                    cartItems.remove(item);
+                                    deleteCartItem(item);
+                                });
                             },
                           ),
                         ],
@@ -111,7 +174,7 @@ class _CartPageState extends State<CartPage> {
                     Column(
                       children: [
                         Text("Total price", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400)),
-                        Text("₱ ${getTotalPrice()}", style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                        Text("₱ 1000", style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                       ],
                     ),
                     ElevatedButton(

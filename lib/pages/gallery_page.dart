@@ -58,6 +58,36 @@ class _GalleryPagestate extends State<GalleryPage> {
             }
       }
 
+      Future <void> addBouquetToCart(Bouquet bouquet) async {
+            final token = await Token.getToken();
+            final response = await http.post(
+            Uri.parse('http://10.0.2.2:8080/cart/add'),
+            headers: {
+                HttpHeaders.authorizationHeader: 'Bearer $token',
+                HttpHeaders.contentTypeHeader: 'application/json',
+            },
+            body: jsonEncode({
+                "name": bouquet.name,
+                })
+            );
+            final data = jsonDecode(response.body);
+            if(data['success'] == true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                content: Text(data['message'], style: TextStyle(color: Colors.white)),
+                backgroundColor: Colors.green,
+                ),
+            );
+            } else if(data['success'] == false){
+                ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                content: Text(data['message'], style: TextStyle(color: Colors.white)),
+                backgroundColor: Colors.red,
+                ),
+            );
+            }
+      }
+
 
   int _selectedIndex = 0; // Set the default selected index
 
@@ -232,7 +262,9 @@ class _GalleryPagestate extends State<GalleryPage> {
                                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                                 minimumSize: Size(30, 5),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                  addBouquetToCart(bouquet);
+                              },
                               child: Text(
                                 'Add to Cart',
                                 style: GoogleFonts.averiaSerifLibre(
