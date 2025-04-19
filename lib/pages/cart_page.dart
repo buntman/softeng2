@@ -2,6 +2,7 @@ import 'package:flowershop/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/delivery_page.dart';
+import 'package:flowershop/pages/gallery_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -42,6 +43,7 @@ class _CartPageState extends State<CartPage> {
     void initState() {
         super.initState();
         fetchCartItems();
+        fetchTotalPrice();
     }
 
     Future <void> fetchCartItems() async {
@@ -74,6 +76,33 @@ class _CartPageState extends State<CartPage> {
         );
     }
 
+    Future <void> updateItemQuantity(CartItems item) async {
+        final token = await Token.getToken();
+        final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/cart/update-quantity'),
+        headers:{HttpHeaders.authorizationHeader: 'Bearer $token',
+                HttpHeaders.contentTypeHeader: 'application/json'},
+        body: jsonEncode({
+            "cart_id" : item.cartId,
+            "quantity": item.quantity,
+            })
+        );
+    }
+
+    Future <double> fetchTotalPrice() async {
+        final token = await Token.getToken();
+        final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/cart/total-price'),
+        headers:{HttpHeaders.authorizationHeader: 'Bearer $token'},
+        );
+        final data = jsonDecode(response.body);
+        if(response.statusCode == 200) {
+            return double.tryParse(data['total_price'].toString()) ?? 0;
+        } else {
+            throw Exception('Failed to fetch price');
+        }
+    }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +121,40 @@ class _CartPageState extends State<CartPage> {
           )
         ],
       ),
-      body: Column(
+      body: cartItems.isEmpty 
+      ? Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart, color: Colors.black,size: 150),
+            onPressed: () {},
+          ), 
+          Text("Your cart is empty",
+                style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 3),
+            SizedBox(
+                width: 300,
+                child:
+            Text("Looks like you have not added anything to your cart. Go ahead & explore the gallery!",
+                style: TextStyle(fontSize: 12,color: Colors.grey),
+                textAlign: TextAlign.center,
+                ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink,
+                        padding: EdgeInsets.symmetric(vertical: 10,horizontal: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                      ),
+                      onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryPage()))},
+                      child: Text("Shop Now", style: GoogleFonts.poppins(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w500)),
+            )
+            ],
+        )
+      ):Column(
         children: [
           Expanded(
             child: ListView.builder(
@@ -130,8 +192,7 @@ class _CartPageState extends State<CartPage> {
                               setState(() {
                                if (item.quantity > 1) {
                                   item.quantity--;
-                                } else {
-                                  cartItems.remove(item); 
+                                  updateItemQuantity(item);
                                 }
                               });
                             },
@@ -142,6 +203,7 @@ class _CartPageState extends State<CartPage> {
                             onPressed: () {
                               setState(() {
                                 item.quantity++;
+                                updateItemQuantity(item);
                               });
                             },
                           ),
@@ -171,11 +233,16 @@ class _CartPageState extends State<CartPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
+                    FutureBuilder(
+                    future: fetchTotalPrice(),
+                    builder: (context, snapshot) {
+                    return Column(
                       children: [
                         Text("Total price", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400)),
-                        Text("₱ 1000", style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                        Text('${snapshot.data}', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                       ],
+                    );
+                    },
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
