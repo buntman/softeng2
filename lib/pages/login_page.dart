@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/home_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
+import 'package:flowershop/pages/register_page.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool rememberme = false;
-  final TextEditingController username = TextEditingController();
+  final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   String message = '';
 
@@ -27,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
       url,
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        "email": username.text, // Assuming username is actually the email
+        "email": email.text, 
         "password": password.text,
       }),
     );
@@ -98,14 +99,14 @@ class _LoginPageState extends State<LoginPage> {
            right: 50
            ),
           child: TextField(
-            controller: username,
+            controller: email,
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(10)
               ),
               filled: true,
-              hintText: "Enter your Username",
+              hintText: "Enter your email",
               fillColor: Color.fromRGBO(255, 227, 235, 1)
             ),
           ),
@@ -139,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                 borderRadius: BorderRadius.circular(10)
               ),
               filled: true,
-              hintText: "Enter your Password",
+              hintText: "Enter your password",
               fillColor: Color.fromRGBO(255, 227, 235, 1)
             ),
           ),
@@ -196,7 +197,9 @@ class _LoginPageState extends State<LoginPage> {
                   color: Color.fromRGBO(255, 168, 212, 1),
                   ),
               ),
-              TextButton(onPressed: () => {}, 
+              TextButton(onPressed: () => {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage())),
+                  }, 
               child: Text(
                 "Sign Up",
                 style: GoogleFonts.poppins(
