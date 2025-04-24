@@ -140,7 +140,9 @@ class _GalleryPagestate extends State<GalleryPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          },
         ),
         title: TextField(
           decoration: InputDecoration(
