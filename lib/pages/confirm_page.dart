@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flowershop/pages/delivery_page.dart';
-
+import 'package:flowershop/pages/payment_page.dart';
+import 'package:flowershop/pages/temporary_storage.dart';
+import 'package:flowershop/pages/token_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'dart:convert';
 
 class ConfirmPage extends StatefulWidget {
   const ConfirmPage({super.key, DateTime? date, TimeOfDay? time});
@@ -10,68 +14,104 @@ class ConfirmPage extends StatefulWidget {
   State<ConfirmPage> createState() => _ConfirmPageState();
 }
 
+class ItemsToCheckOut {
+  final int quantity;
+  final String name;
+  final double subprice;
 
- Widget _orderItem(String name, int quantity, int price, {String? extra}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("${quantity}x  $name", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-              Text("₱ ${price.toStringAsFixed(2)}", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-            ],
-          ),
-          if (extra != null)
-            Text(extra, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.grey)),
-        ],
-      ),
+  ItemsToCheckOut({
+    required this.quantity,
+    required this.name,
+    required this.subprice,
+  });
+
+  factory ItemsToCheckOut.fromJson(Map<String, dynamic> json) {
+    return ItemsToCheckOut(
+      quantity: int.tryParse(json['quantity']?.toString() ?? '') ?? 0,
+      name: json['product_name']?.toString() ?? '',
+      subprice: double.tryParse(json['subprice']?.toString() ?? '0') ?? 0.0,
     );
   }
-
-  Widget _priceItem(String label, int price) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-          Text("₱ ${price.toStringAsFixed(2)}", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-
-
-
+}
 
 class _ConfirmPageState extends State<ConfirmPage> {
-   final List<Map<String, dynamic>> orders = [
-    {"name": "Tulip", "quantity": 1, "price": 650},
-    {"name": "Daffodil", "quantity": 1, "price": 650, "extra": "Extra Wrapping"},
-    {"name": "White roses", "quantity": 1, "price": 650},
-    {"name": "Red lily", "quantity": 1, "price": 650, "extra": "Extra wrapping, Extra sponge"},
-  ];
+  List<ItemsToCheckOut> items = [];
+  String? _paymentOption;
+  String? _pickupDate;
+  String? _pickupTime;
+  double totalPrice = 0;
 
-  int get totalPrice {
-    int subtotal = orders.fold(0, (sum, order) => sum + (order["quantity"] * order["price"]) as int);
-    int adminFee = 10;
-    return subtotal + adminFee;
+  @override
+  void initState() {
+    super.initState();
+    fetchPaymentAndSchedule();
+    fetchItems();
+    fetchTotalPrice();
+  }
+
+  Future<void> fetchItems() async {
+    final token = await Token.getToken();
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8080/api/order'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        items = jsonData.map((item) => ItemsToCheckOut.fromJson(item)).toList();
+      });
+    }
+  }
+
+  Future<void> fetchTotalPrice() async {
+    final token = await Token.getToken();
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8080/cart/total-price'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+    );
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      totalPrice = double.tryParse(data['total_price'].toString()) ?? 0;
+    } else {
+      throw Exception('Failed to fetch price');
+    }
+  }
+
+  Future<void> fetchPaymentAndSchedule() async {
+    String? payment = await TemporaryStorage.getPaymentOption();
+    String? date = await TemporaryStorage.getPickupDate();
+    String? time = await TemporaryStorage.getPickupTime();
+    setState(() {
+      _paymentOption = payment;
+      _pickupDate = date;
+      _pickupTime = time;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Confirm Order", style: GoogleFonts.inter(color: Colors.black,fontSize: 14,fontWeight: FontWeight.w400)),
+        title: Text(
+          "Confirm Order",
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => DeliveryPage()))},
+          onPressed: () async {
+            await TemporaryStorage.removeData();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentPage()),
+            );
+          },
         ),
       ),
       body: Padding(
@@ -83,17 +123,49 @@ class _ConfirmPageState extends State<ConfirmPage> {
               children: [
                 Column(
                   children: [
-                    Radio(activeColor: Color.fromRGBO(250, 34, 144, 1), value: 'delivery options', groupValue: '', onChanged: (value){}, toggleable: false,
-                    fillColor: WidgetStateColor.resolveWith((states) => Color.fromRGBO(250, 34, 144, 1))),
-                    Text("Delivery\nOptions", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400, color: Color.fromRGBO(250, 34, 144, 1),),),
+                    Radio(
+                      activeColor: Color.fromRGBO(250, 34, 144, 1),
+                      value: 'payment options',
+                      groupValue: '',
+                      onChanged: (value) {},
+                      toggleable: false,
+                      fillColor: WidgetStateColor.resolveWith(
+                        (states) => Color.fromRGBO(250, 34, 144, 1),
+                      ),
+                    ),
+                    Text(
+                      "Payment\nOptions",
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromRGBO(250, 34, 144, 1),
+                      ),
+                    ),
                   ],
                 ),
-                Text("     ..........................................................     "),
+                Text(
+                  "     ..........................................................     ",
+                ),
                 Column(
                   children: [
-                    Radio(value: 'Confirm', groupValue: 'Confirm', onChanged: (value){}, toggleable: false, autofocus: false,
-                    fillColor: WidgetStateColor.resolveWith((states) => Color.fromRGBO(250, 34, 144, 1))),
-                    Text("Confirm\n",  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400, color: Color.fromRGBO(250, 34, 144, 1),),),
+                    Radio(
+                      value: 'Confirm',
+                      groupValue: 'Confirm',
+                      onChanged: (value) {},
+                      toggleable: false,
+                      autofocus: false,
+                      fillColor: WidgetStateColor.resolveWith(
+                        (states) => Color.fromRGBO(250, 34, 144, 1),
+                      ),
+                    ),
+                    Text(
+                      "Confirm\n",
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromRGBO(250, 34, 144, 1),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -101,11 +173,31 @@ class _ConfirmPageState extends State<ConfirmPage> {
             SizedBox(height: 20),
             Text(
               "Order Detail",
-              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             Text(
-              "Pay-In Person\nRizza’s Flower Shop\nMWCW+588, Rizal St, Bacolod, 6100 Negros Occidental\nPick up time: 02/10/25 - 09:00 - 21:00",
-              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400),
+              _paymentOption ?? '....',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            Text(
+              'Date:${_pickupDate ?? '....'}',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            Text(
+              'Time:${_pickupTime ?? '....'}',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
             ),
             SizedBox(height: 20),
             Container(
@@ -117,42 +209,80 @@ class _ConfirmPageState extends State<ConfirmPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Order Summary", style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(
+                    "Order Summary",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   Divider(),
                   SizedBox(
                     height: 200,
                     child: ListView.builder(
-                      itemCount: orders.length,
+                      itemCount: items.length,
                       itemBuilder: (context, index) {
-                        var order = orders[index];
-                        return _orderItem(order["name"], order["quantity"], order["price"], extra: order["extra"]);
+                        var item = items[index];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text('${item.quantity}x'),
+                              SizedBox(width: 10),
+                              Text(
+                                item.name,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Spacer(),
+                              Text(
+                                '₱${item.subprice.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                       },
                     ),
                   ),
-                  Divider(),
-                  _priceItem("Subtotal", totalPrice - 10),
-                  _priceItem("Admin fee", 10),
                 ],
               ),
             ),
             Spacer(),
             Text(
               "Total Price",
-              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             Text(
-              "₱ ${totalPrice.toStringAsFixed(2)}",
-              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700),
+              '₱${totalPrice.toStringAsFixed(2)}',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             Padding(padding: EdgeInsets.only(top: 15)),
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor:  Color.fromRGBO(250, 34, 144, 1),
+                backgroundColor: Color.fromRGBO(250, 34, 144, 1),
                 minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-              child: Text('Confirm Order', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
+              child: Text(
+                'Confirm Order',
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+              ),
             ),
           ],
         ),

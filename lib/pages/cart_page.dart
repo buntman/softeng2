@@ -1,7 +1,7 @@
 import 'package:flowershop/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flowershop/pages/delivery_page.dart';
+import 'package:flowershop/pages/payment_page.dart';
 import 'package:flowershop/pages/gallery_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
 import 'dart:convert';
@@ -250,7 +250,7 @@ class _CartPageState extends State<CartPage> {
                         padding: EdgeInsets.symmetric(vertical: 15,horizontal: 40),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
                       ),
-                      onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => DeliveryPage()))},
+                      onPressed: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()))},
                       child: Text("Place an order", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500)),
                     ),
                   ],
