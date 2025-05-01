@@ -45,7 +45,7 @@ class _GalleryPagestate extends State<GalleryPage> {
       Future <void> fetchBouquets() async {
             final token = await Token.getToken();
             final response = await http.get(
-            Uri.parse('http://10.0.2.2:8080/gallery'),
+            Uri.parse('http://10.0.2.2:8080/api/gallery'),
             headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
             );
             if(response.statusCode == 200) {
@@ -61,7 +61,7 @@ class _GalleryPagestate extends State<GalleryPage> {
       Future <void> addBouquetToCart(Bouquet bouquet) async {
             final token = await Token.getToken();
             final response = await http.post(
-            Uri.parse('http://10.0.2.2:8080/cart/add'),
+            Uri.parse('http://10.0.2.2:8080/api/cart/add'),
             headers: {
                 HttpHeaders.authorizationHeader: 'Bearer $token',
                 HttpHeaders.contentTypeHeader: 'application/json',

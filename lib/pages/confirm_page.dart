@@ -69,7 +69,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
   Future<void> fetchTotalPrice() async {
     final token = await Token.getToken();
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/cart/total-price'),
+      Uri.parse('http://10.0.2.2:8080/api/cart/total-price'),
       headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
     final data = jsonDecode(response.body);
@@ -94,7 +94,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
   Future<void> updateCartStatus() async {
     final token = await Token.getToken();
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/cart/status'),
+      Uri.parse('http://10.0.2.2:8080/api/cart/status'),
       headers: {
         HttpHeaders.authorizationHeader: 'Bearer $token',
         HttpHeaders.contentTypeHeader: 'application/json',

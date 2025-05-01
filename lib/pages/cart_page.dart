@@ -49,7 +49,7 @@ class _CartPageState extends State<CartPage> {
     Future <void> fetchCartItems() async {
         final token = await Token.getToken();
         final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/cart'),
+        Uri.parse('http://10.0.2.2:8080/api/cart'),
         headers:{HttpHeaders.authorizationHeader: 'Bearer $token'},
         );
 
@@ -67,7 +67,7 @@ class _CartPageState extends State<CartPage> {
     Future <void> deleteCartItem(CartItems item) async {
         final token = await Token.getToken();
         final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/cart/delete'),
+        Uri.parse('http://10.0.2.2:8080/api/cart/delete'),
         headers: {HttpHeaders.authorizationHeader: 'Bearer $token',
                 HttpHeaders.contentTypeHeader: 'application/json'},
         body: jsonEncode({
@@ -79,7 +79,7 @@ class _CartPageState extends State<CartPage> {
     Future <void> updateItemQuantity(CartItems item) async {
         final token = await Token.getToken();
         final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/cart/update-quantity'),
+        Uri.parse('http://10.0.2.2:8080/api/cart/update-quantity'),
         headers:{HttpHeaders.authorizationHeader: 'Bearer $token',
                 HttpHeaders.contentTypeHeader: 'application/json'},
         body: jsonEncode({
@@ -92,7 +92,7 @@ class _CartPageState extends State<CartPage> {
     Future <double> fetchTotalPrice() async {
         final token = await Token.getToken();
         final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/cart/total-price'),
+        Uri.parse('http://10.0.2.2:8080/api/cart/total-price'),
         headers:{HttpHeaders.authorizationHeader: 'Bearer $token'},
         );
         final data = jsonDecode(response.body);

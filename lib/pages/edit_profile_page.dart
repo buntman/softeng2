@@ -26,7 +26,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> fetchCurrentDetails() async {
     final token = await Token.getToken();
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/profile'),
+      Uri.parse('http://10.0.2.2:8080/api/profile'),
       headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
 
@@ -40,7 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> editProfile() async {
     final token = await Token.getToken();
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/user/edit-profile'),
+      Uri.parse('http://10.0.2.2:8080/api/profile/edit'),
       headers: {
         HttpHeaders.authorizationHeader: 'Bearer $token',
         HttpHeaders.contentTypeHeader: 'application/json',

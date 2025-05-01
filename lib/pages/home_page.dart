@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> fetchBouquets() async {
     final token = await Token.getToken();
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/home'),
+      Uri.parse('http://10.0.2.2:8080/api/home'),
       headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
     if (response.statusCode == 200) {

@@ -53,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> fetchUserDetails() async {
     final token = await Token.getToken();
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/profile'),
+      Uri.parse('http://10.0.2.2:8080/api/profile'),
       headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
 
