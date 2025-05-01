@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flowershop/pages/home_page.dart';
 import 'package:flowershop/pages/payment_page.dart';
 import 'package:flowershop/pages/temporary_storage.dart';
 import 'package:flowershop/pages/token_storage.dart';
@@ -32,6 +33,8 @@ class ItemsToCheckOut {
       subprice: double.tryParse(json['subprice']?.toString() ?? '0') ?? 0.0,
     );
   }
+
+  Map<String, dynamic> toJson() => {'product_name': name, 'quantity': quantity};
 }
 
 class _ConfirmPageState extends State<ConfirmPage> {
@@ -86,6 +89,57 @@ class _ConfirmPageState extends State<ConfirmPage> {
       _pickupDate = date;
       _pickupTime = time;
     });
+  }
+
+  Future<void> updateCartStatus() async {
+    final token = await Token.getToken();
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/cart/status'),
+      headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode({"status": "checked_out"}),
+    );
+  }
+
+  Future<void> sendOrderDetails() async {
+    final token = await Token.getToken();
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/api/order'),
+      headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode({
+        "payment_method": _paymentOption,
+        "total_price": totalPrice,
+        "pickup_date": _pickupDate,
+        "pickup_time": _pickupTime,
+        "items": items.map((e) => e.toJson()).toList(),
+      }),
+    );
+    final data = jsonDecode(response.body);
+
+    if (data["success"] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message'], style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } else if (data["success"] == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message'], style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -186,14 +240,14 @@ class _ConfirmPageState extends State<ConfirmPage> {
               ),
             ),
             Text(
-              'Date:${_pickupDate ?? '....'}',
+              'Pickup Date:${_pickupDate ?? '....'}',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
               ),
             ),
             Text(
-              'Time:${_pickupTime ?? '....'}',
+              'Pickup Time:${_pickupTime ?? '....'}',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -271,7 +325,10 @@ class _ConfirmPageState extends State<ConfirmPage> {
             ),
             Padding(padding: EdgeInsets.only(top: 15)),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                await updateCartStatus();
+                await sendOrderDetails();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(250, 34, 144, 1),
                 minimumSize: Size(double.infinity, 50),
