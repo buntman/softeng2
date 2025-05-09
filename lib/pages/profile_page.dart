@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/token_storage.dart';
 import 'package:flowershop/pages/edit_profile_page.dart';
+import 'package:flowershop/pages/history.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -100,6 +101,32 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: Icon(Icons.person, color: Colors.black, size: 180),
               onPressed: () {
               },
+            ),
+            Container(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pink,
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => History()),
+                  );
+                },
+                child: Text(
+                  "Orders",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
             Container(
               margin: EdgeInsets.only(right: 30),

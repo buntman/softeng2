@@ -328,6 +328,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
               onPressed: () async {
                 await updateCartStatus();
                 await sendOrderDetails();
+                await TemporaryStorage.removeData();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(250, 34, 144, 1),

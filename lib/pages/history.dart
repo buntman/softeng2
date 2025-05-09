@@ -1,80 +1,138 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flowershop/pages/token_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'dart:convert';
 
 class History extends StatefulWidget {
   const History({super.key});
 
   @override
-  State<History> createState() => _HistoryState(); 
+  State<History> createState() => _HistoryState();
 }
 
-class _HistoryState extends State<History> { 
-  final List<String> tabs = ['Pending', 'Ready to Pick Up', 'Picked Up'];
+class Order {
+  final int orderId;
+  final double totalPrice;
+  final String pickupDate;
+  final String pickupTime;
+  final String paymentMethod;
+  String status;
+  final List<OrderItem> items;
 
-  final List<Map<String, dynamic>> pendingOrders = [
-    {
-      'id': '#12345',
-      'shopName': "Rizza's Flower Shop", 
-      'status': 'Processing',
-      'pickupTime': '02/10/25 - 10:00-12:00',
-      'address': "MWCW+588, Rizal St, Bacolod, 6100 Negros Occidental", 
-      'items': [
-        {'name': 'Red Roses', 'quantity': 12, 'price': 1200.00, 'extras': []},
-        {'name': 'Vase', 'quantity': 1, 'price': 250.00, 'extras': []},
-      ],
-      'totalPrice': 1450.00,
-      'paymentMethod': 'Pay-In Person',
-    },
-    {
-      'id': '#12346',
-      'shopName': "Rizza's Flower Shop", 
-      'status': 'Waiting for confirmation',
-      'pickupTime': '03/10/25 - 14:00-16:00',
-      'address': "MWCW+588, Rizal St, Bacolod, 6100 Negros Occidental", 
-      'items': [
-        {'name': 'Sunflowers', 'quantity': 5, 'price': 750.00, 'extras': []},
-      ],
-      'totalPrice': 750.00,
-      'paymentMethod': 'Pay-In Person',
-    },
-  ];
+  Order({
+    required this.orderId,
+    required this.totalPrice,
+    required this.pickupDate,
+    required this.pickupTime,
+    required this.paymentMethod,
+    required this.status,
+    required this.items,
+  });
 
-  final List<Map<String, dynamic>> readyOrders = [
-    
-    {
-      'id': '#12344',
-      'shopName': "Rizza's Flower Shop", 
-      'status': 'Ready for pickup',
-      'pickupTime': '02/10/25 - 09:00-21:00', 
-      'address': "MWCW+588, Rizal St, Bacolod, 6100 Negros Occidental", 
-      'items': [
-         {'name': 'Tulip', 'quantity': 7, 'price': 650.00, 'extras': ['edit']},
-         {'name': 'Daffodil', 'quantity': 10, 'price': 650.00, 'extras': ['Extra Wrapping', 'edit']},
-         {'name': 'White roses', 'quantity': 1, 'price': 650.00, 'extras': ['edit']},
-         {'name': 'Red lily', 'quantity': 4, 'price': 650.00, 'extras': ['Extra wrapping', 'Extra sponge', 'edit']},
-         {'name': 'Another Flower', 'quantity': 2, 'price': 300.00, 'extras': []},
-         {'name': 'Yet Another Item', 'quantity': 1, 'price': 150.00, 'extras': ['Special Request']},
-      ],
-      'totalPrice': 2670.00, 
-      'paymentMethod': 'Pay-In Person', 
-    },
-  ];
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      orderId: json['id'],
+      totalPrice:
+          double.tryParse(json['total_price']?.toString() ?? '0') ?? 0.0,
+      pickupDate: json['pickup_date']?.toString() ?? '',
+      pickupTime: json['pickup_time']?.toString() ?? '',
+      paymentMethod: json['payment_method']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+}
 
-  final List<Map<String, dynamic>> pickedUpOrders = [
-    {
-      'id': '#12343',
-      'shopName': "Rizza's Flower Shop",
-      'status': 'Picked up',
-      'pickupTime': '30/09/25 - 11:00-13:00',
-      'address': "MWCW+588, Rizal St, Bacolod, 6100 Negros Occidental", 
-      'items': [
-        {'name': 'Orchids', 'quantity': 3, 'price': 900.00, 'extras': []},
-        {'name': 'Fertilizer', 'quantity': 1, 'price': 150.00, 'extras': []},
-      ],
-      'totalPrice': 1050.00,
-      'paymentMethod': 'Pay-In Person',
-    },
-  ];
+class OrderItem {
+  final String name;
+  final int quantity;
+  final double price;
+
+  OrderItem({required this.name, required this.quantity, required this.price});
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      name: json['product_name']?.toString() ?? '',
+      quantity: int.tryParse(json['quantity']?.toString() ?? '') ?? 0,
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+class _HistoryState extends State<History> {
+  final List<String> tabs = ['Pending', 'Ready for Pick Up', 'Picked Up'];
+  List<Order> pendingOrders = [];
+  List<Order> readyOrders = [];
+  List<Order> pickedUpOrders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrderDetails();
+  }
+
+  Future<void> fetchOrderDetails() async {
+    final token = await Token.getToken();
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8080/api/order/details'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      List<Order> pending = [];
+      List<Order> ready = [];
+      List<Order> pickedUp = [];
+
+      if (data is Map<String, dynamic>) {
+        final order = Order.fromJson(data);
+        final status = data['status'];
+        if (status == 'Pending') {
+          pending.add(order);
+        } else if (status == 'Ready for Pickup') {
+          ready.add(order);
+        } else if (status == 'Picked Up') {
+          pickedUp.add(order);
+        }
+      } else if (data is List) {
+        for (var orderJson in data) {
+          final order = Order.fromJson(orderJson);
+          final status = orderJson['status'];
+          if (status == 'Pending') {
+            pending.add(order);
+          } else if (status == 'Ready for Pickup') {
+            ready.add(order);
+          } else if (status == 'Picked Up') {
+            pickedUp.add(order);
+          }
+        }
+      }
+
+      setState(() {
+        pendingOrders = pending;
+        readyOrders = ready;
+        pickedUpOrders = pickedUp;
+      });
+    }
+  }
+
+  Future<void> updatePickedUpOrderStatus(Order order) async {
+    final token = await Token.getToken();
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/api/order/status'),
+      headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode({"order_id": order.orderId}),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +141,8 @@ class _HistoryState extends State<History> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 1, 
-          shadowColor: Colors.grey.shade300, 
+          elevation: 1,
+          shadowColor: Colors.grey.shade300,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
@@ -103,20 +161,24 @@ class _HistoryState extends State<History> {
             unselectedLabelColor: Colors.grey[700],
             indicatorColor: Colors.pink,
             indicatorWeight: 3.0, // Slightly thicker indicator
-            labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12), 
-            unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 12), 
+            labelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
             tabs: tabs.map((t) => Tab(text: t)).toList(),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 254, 207, 223), 
+        backgroundColor: const Color.fromARGB(255, 254, 207, 223),
         body: TabBarView(
           children: [
             // Pending tab
             _buildOrderList(pendingOrders, Colors.white),
-
             // Ready to Pick Up tab
             _buildOrderList(readyOrders, Colors.white),
-
             // Picked Up tab
             _buildOrderList(pickedUpOrders, Colors.white),
           ],
@@ -125,27 +187,26 @@ class _HistoryState extends State<History> {
     );
   }
 
-  Widget _buildOrderList(List<Map<String, dynamic>> orders, Color cardColor) {
+  Widget _buildOrderList(List<Order> orders, Color cardColor) {
     if (orders.isEmpty) {
       return Center(
-          child: Text(
-        'No orders Availavblet.',
-        style: GoogleFonts.poppins(color: Colors.grey[600]),
-      ));
+        child: Text(
+          'No orders Available.',
+          style: GoogleFonts.poppins(color: Colors.grey[600]),
+        ),
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];
-        final List<dynamic> items = order['items'] as List<dynamic>; // Cast items list
-
         return Card(
           color: cardColor,
-          elevation: 2, 
+          elevation: 2,
           shadowColor: Colors.grey.shade200,
-          margin: const EdgeInsets.only(bottom: 16), 
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), 
+          margin: const EdgeInsets.only(bottom: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -153,51 +214,75 @@ class _HistoryState extends State<History> {
               children: [
                 // Top Section: Payment, Shop, Address, Pickup Time
                 Text(
-                  order['paymentMethod'],
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.grey[700])
+                  order.paymentMethod,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  order['shopName'],
-                  style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold)
+                  "Rizza Flower Shop",
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                 const SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  order['address'],
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600])
+                  "MWCW+588, Rizal St, Bacolod, 6100 Negros Occidental",
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Row( // Use row for label and value
+                Row(
+                  // Use row for label and value
                   children: [
-                     Text('Pick up time: ', style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[800])),
-                     Text(order['pickupTime'], style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Pick up time: ',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    Text(
+                      '${order.pickupDate}  ${order.pickupTime}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
 
                 const Divider(height: 24, thickness: 1), // Thicker divider
-
                 // --- Order Summary Section ---
                 Text(
                   'Order summary',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
                 const SizedBox(height: 12),
 
                 // --- Scrollable Item List ---
                 ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.25, 
+                    maxHeight: MediaQuery.of(context).size.height * 0.25,
                   ),
                   child: ListView.builder(
-                    shrinkWrap: true, // Important for ListView inside Column/ConstrainedBox
-                    itemCount: items.length,
+                    shrinkWrap:
+                        true, // Important for ListView inside Column/ConstrainedBox
+                    itemCount: order.items.length,
                     itemBuilder: (ctx, itemIndex) {
-                      final item = items[itemIndex] as Map<String, dynamic>; // Cast item
-                      final List<dynamic> extras = item['extras'] as List<dynamic>? ?? []; // Get extras safely
-
+                      final item = order.items[itemIndex];
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0), 
-                        child: Column( // Use column to stack main row and extras
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
@@ -205,62 +290,102 @@ class _HistoryState extends State<History> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Left side: Quantity and Name
-                                Flexible( // Allow text wrapping
+                                Flexible(
+                                  // Allow text wrapping
                                   child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${item['quantity']}x ',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.pink, 
-                                            fontSize: 14
-                                            ),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${item.quantity}x ',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.pink,
+                                          fontSize: 14,
                                         ),
-                                        Expanded( // Allow name to take space and wrap
-                                          child: Text(
-                                            item['name'],
-                                            style: GoogleFonts.poppins(fontSize: 14),
+                                      ),
+                                      Expanded(
+                                        // Allow name to take space and wrap
+                                        child: Text(
+                                          item.name,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 // Right side: Price
                                 Text(
-                                  '₱${(item['price'] as double).toStringAsFixed(2)} PHP', // Ensure price is double
-                                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 14),
+                                  '${item.price.toStringAsFixed(2)} PHP', // Ensure price is double
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ],
                             ),
-                            // Display Extras below the item row
-                            if (extras.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 25.0, top: 2.0), // Indent extras slightly
-                                child: Text(
-                                  extras.join(', '), // Join extras with a comma
-                                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-                                ),
-                              ),
                           ],
                         ),
                       );
                     },
                   ),
                 ),
-                // --- End Scrollable Item List ---
-
                 const Divider(height: 24, thickness: 1),
-
-                // Total Price Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Price', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
                     Text(
-                      '₱${(order['totalPrice'] as double).toStringAsFixed(2)} PHP', // Ensure total price is double
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                      'Total Price',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '${order.totalPrice.toStringAsFixed(2)} PHP', // Ensure total price is double
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (order.status == 'Ready for Pickup')
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pink,
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await updatePickedUpOrderStatus(order);
+                          setState(() {
+                            orders.remove(order);
+                            order.status = 'Picked Up';
+                            pickedUpOrders.add(order);
+                          });
+                        },
+                        child: Text(
+                          "Complete",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ],
