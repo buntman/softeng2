@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
 import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/gallery_page.dart';
-import 'package:flowershop/pages/notif_page.dart';
 import 'package:flowershop/pages/profile_page.dart';
+import 'package:flowershop/pages/history_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
         case 3:
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => NotifPage()),
+            MaterialPageRoute(builder: (context) => HistoryPage()),
           );
       }
     });
@@ -121,8 +121,8 @@ class _HomePageState extends State<HomePage> {
             label: "Checkout",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notification",
+            icon: Icon(Icons.list_alt),
+            label: "Orders",
           ),
         ],
       ),

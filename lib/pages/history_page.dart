@@ -5,11 +5,11 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
 
-class History extends StatefulWidget {
-  const History({super.key});
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({super.key});
 
   @override
-  State<History> createState() => _HistoryState();
+  State<HistoryPage> createState() => _HistoryPageState();
 }
 
 class Order {
@@ -65,7 +65,7 @@ class OrderItem {
   }
 }
 
-class _HistoryState extends State<History> {
+class _HistoryPageState extends State<HistoryPage> {
   final List<String> tabs = ['Pending', 'Ready for Pick Up', 'Picked Up'];
   List<Order> pendingOrders = [];
   List<Order> readyOrders = [];

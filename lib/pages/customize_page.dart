@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
 import 'package:flowershop/pages/home_page.dart';
-import 'package:flowershop/pages/notif_page.dart';
+import 'package:flowershop/pages/history_page.dart';
 
 class CustomizePage extends StatefulWidget {
   const CustomizePage({super.key});
@@ -99,7 +99,7 @@ class _CustomizePageState extends State<CustomizePage> {
         case 2:
           Navigator.push(context, MaterialPageRoute(builder: (context) => CartPage()));
         case 3:
-          Navigator.push(context, MaterialPageRoute(builder: (context) => NotifPage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryPage()));
       }
     });
   }
@@ -128,8 +128,8 @@ class _CustomizePageState extends State<CustomizePage> {
             label: "Checkout",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notification",
+            icon: Icon(Icons.list_alt),
+            label: "Orders",
           ),
         ],
       ),
@@ -149,7 +149,7 @@ class _CustomizePageState extends State<CustomizePage> {
               Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.notifications, color: Color.fromRGBO(190, 54, 165, 1),),
+                    icon: Icon(Icons.list_alt, color: Color.fromRGBO(190, 54, 165, 1),),
                     onPressed: () {},
                   ),
                   IconButton(
