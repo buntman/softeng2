@@ -13,7 +13,7 @@ class HistoryPage extends StatefulWidget {
 }
 
 class Order {
-  final int orderId;
+  final String orderId;
   final double totalPrice;
   final String pickupDate;
   final String pickupTime;
@@ -213,6 +213,14 @@ class _HistoryPageState extends State<HistoryPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top Section: Payment, Shop, Address, Pickup Time
+                Text(
+                  'Order ID: ${order.orderId}',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                  ),
+                ),
                 Text(
                   order.paymentMethod,
                   style: GoogleFonts.poppins(
