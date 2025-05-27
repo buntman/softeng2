@@ -7,6 +7,7 @@ import 'package:flowershop/pages/token_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ConfirmPage extends StatefulWidget {
   const ConfirmPage({super.key, DateTime? date, TimeOfDay? time});
@@ -35,6 +36,62 @@ class ItemsToCheckOut {
   }
 
   Map<String, dynamic> toJson() => {'product_name': name, 'quantity': quantity};
+}
+
+class PaymentWebView extends StatefulWidget {
+  final String url;
+
+  const PaymentWebView({Key? key, required this.url}) : super(key: key);
+
+  @override
+  State<PaymentWebView> createState() => _PaymentWebViewState();
+}
+
+class _PaymentWebViewState extends State<PaymentWebView> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (url) {
+                setState(() => _isLoading = true);
+              },
+              onPageFinished: (url) {
+                setState(() => _isLoading = false);
+              },
+              onWebResourceError: (error) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${error.description}')),
+                );
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Complete Payment"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
+        ],
+      ),
+    );
+  }
 }
 
 class _ConfirmPageState extends State<ConfirmPage> {
@@ -103,7 +160,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
     );
   }
 
-  Future<void> sendOrderDetails() async {
+  Future<String?> sendOrderDetails() async {
     final token = await Token.getToken();
     final response = await http.post(
       Uri.parse('http://10.0.2.2:8080/api/order'),
@@ -122,17 +179,24 @@ class _ConfirmPageState extends State<ConfirmPage> {
     final data = jsonDecode(response.body);
 
     if (data["success"] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data['message'], style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (data.containsKey('checkout_url')) {
+        return data['checkout_url'];
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              data['message'],
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
-    } else if (data["success"] == false) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(data['message'], style: TextStyle(color: Colors.white)),
@@ -140,6 +204,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
         ),
       );
     }
+    return null;
   }
 
   @override
@@ -327,8 +392,18 @@ class _ConfirmPageState extends State<ConfirmPage> {
             ElevatedButton(
               onPressed: () async {
                 await updateCartStatus();
-                await sendOrderDetails();
+                String? url = await sendOrderDetails();
                 await TemporaryStorage.removeData();
+
+                if (url != null) {
+                  // Payment method is GCash, open the WebView for checkout
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PaymentWebView(url: url),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(250, 34, 144, 1),

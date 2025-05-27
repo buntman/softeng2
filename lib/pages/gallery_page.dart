@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
-import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/home_page.dart';
 import 'package:flowershop/pages/history_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
@@ -89,7 +88,7 @@ class _GalleryPagestate extends State<GalleryPage> {
       }
 
 
-  int _selectedIndex = 0; // Set the default selected index
+  int _selectedIndex = 1; // Set the default selected index
 
   void _onItemTapped(int index) {
     setState(() {
@@ -98,7 +97,7 @@ class _GalleryPagestate extends State<GalleryPage> {
         case 0:
           Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
         case 1:
-          Navigator.push(context, MaterialPageRoute(builder: (context) => CustomizePage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryPage()));
         case 2:
           Navigator.push(context, MaterialPageRoute(builder: (context) => CartPage()));
         case 3:
@@ -118,12 +117,12 @@ class _GalleryPagestate extends State<GalleryPage> {
         onTap: _onItemTapped, // Handle tap
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view),
-            label: "Gallery",
+            icon: Icon(Icons.home),
+            label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize),
-            label: "Customize",
+            icon: Icon(Icons.grid_view),
+            label: "Gallery",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
