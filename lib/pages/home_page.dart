@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
-import 'package:flowershop/pages/customize_page.dart';
 import 'package:flowershop/pages/gallery_page.dart';
-import 'package:flowershop/pages/notif_page.dart';
 import 'package:flowershop/pages/profile_page.dart';
+import 'package:flowershop/pages/history_page.dart';
 import 'package:flowershop/pages/token_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -79,7 +78,7 @@ class _HomePageState extends State<HomePage> {
         case 1:
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CustomizePage()),
+            MaterialPageRoute(builder: (context) => GalleryPage()),
           );
         case 2:
           Navigator.push(
@@ -89,7 +88,7 @@ class _HomePageState extends State<HomePage> {
         case 3:
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => NotifPage()),
+            MaterialPageRoute(builder: (context) => HistoryPage()),
           );
       }
     });
@@ -109,20 +108,20 @@ class _HomePageState extends State<HomePage> {
         onTap: _onItemTapped, // Handle tap
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view),
-            label: "Gallery",
+            icon: Icon(Icons.home),
+            label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize),
-            label: "Customize",
+            icon: Icon(Icons.grid_view),
+            label: "Gallery",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: "Checkout",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notification",
+            icon: Icon(Icons.list_alt),
+            label: "Orders",
           ),
         ],
       ),

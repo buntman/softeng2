@@ -50,6 +50,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
         "contact_number": contactNumber.text,
       }),
     );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              data['message']['error'],
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else if (data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              data['message'],
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+      }
+    }
   }
 
   @override
@@ -140,12 +168,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
           Padding(padding: EdgeInsets.only(top: 20)),
           ElevatedButton(
-            onPressed: () {
-              editProfile();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
-              );
+            onPressed: () async {
+              await editProfile();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
