@@ -1,3 +1,8 @@
+import 'package:flowershop/pages/cart_page.dart';
+import 'package:flowershop/pages/customize_page.dart';
+import 'package:flowershop/pages/gallery_page.dart';
+import 'package:flowershop/pages/history.dart';
+import 'package:flowershop/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flowershop/pages/login_page.dart';
 
@@ -15,4 +20,4 @@ class MyApp extends StatelessWidget {
       home: LoginPage(),
     );
   }
-}
+} 

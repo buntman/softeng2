@@ -1,4 +1,6 @@
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flowershop/pages/cards.dart';
+import 'package:flowershop/pages/flowers.dart';
+import 'package:flowershop/pages/packages.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flowershop/pages/cart_page.dart';
@@ -13,93 +15,25 @@ class CustomizePage extends StatefulWidget {
 }
 
 class _CustomizePageState extends State<CustomizePage> {
-
-  
-  int _price = 0;
-  int _time =0;
-  int _counter = 0;
-  int _counter1 = 0;
-  int _counter2 = 0;
-  int _counter3 = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  void _decrementCounter() {
-    setState(() {
-      if (_counter == 0) {
-        _counter = 0;
-      }else{
-        _counter --;
-      }
-    });
-  }
-
-  void _incrementCounter1() {
-    setState(() {
-      _counter1++;
-    });
-  }
-
-  void _decrementCounter1() {
-    setState(() {
-      if (_counter1 == 0) {
-        _counter1 = 0;
-      }else{
-        _counter1 --;
-      }
-    });
-  }
-
-  void _incrementCounter2() {
-    setState(() {
-      _counter2++;
-    });
-  }
-
-  void _decrementCounter2() {
-    setState(() {
-      if (_counter2 == 0) {
-        _counter2 = 0;
-      }else{
-        _counter2 --;
-      }
-    });
-  }
-
-  void _incrementCounter3() {
-    setState(() {
-      _counter3++;
-    });
-  }
-
-  void _decrementCounter3() {
-    setState(() {
-      if (_counter3 == 0) {
-        _counter3 = 0;
-      }else{
-        _counter3 --;
-      }
-    });
-  }
-
   int _selectedIndex = 1;
+  double totalPrice = 65.00; // Store the total price (you can update this as per your selections)
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      switch (_selectedIndex){
+      switch (_selectedIndex) {
         case 0:
           Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          break;
         case 1:
           Navigator.push(context, MaterialPageRoute(builder: (context) => CustomizePage()));
+          break;
         case 2:
           Navigator.push(context, MaterialPageRoute(builder: (context) => CartPage()));
+          break;
         case 3:
           Navigator.push(context, MaterialPageRoute(builder: (context) => NotifPage()));
+          break;
       }
     });
   }
@@ -111,10 +45,10 @@ class _CustomizePageState extends State<CustomizePage> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.purple, // Highlighted item color
-        unselectedItemColor: Colors.grey, // Unselected item color
-        onTap: _onItemTapped, // Handle tap
-        items: [
+        selectedItemColor: Colors.purple,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.grid_view),
             label: "Gallery",
@@ -133,602 +67,272 @@ class _CustomizePageState extends State<CustomizePage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.all(20),
+      body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Rizza FlowerShop",
-              style: GoogleFonts.dancingScript(
-              fontWeight: FontWeight.bold,
-              fontSize: 28,
-              color: Color.fromRGBO(190, 54, 165, 1)
-              ),),
-              Padding(padding: EdgeInsets.only(left: 10)),
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.notifications, color: Color.fromRGBO(190, 54, 165, 1),),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.shopping_cart, color: Color.fromRGBO(190, 54, 165, 1),),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.search, color: Color.fromRGBO(190, 54, 165, 1),),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Padding(padding: EdgeInsets.only(top: 40)),
-          Text("Custom Boquet Builder",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            fontSize: 20
-          ),),
-          Padding(padding: EdgeInsets.only(top: 15)),
-          Container(
-            color: Color.fromRGBO(255, 227, 235, 1),
-            padding: EdgeInsets.all(30),
-            height: 350,
-            child: Column(
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Size",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromRGBO(250, 34, 144, 1),
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color.fromRGBO(250, 34, 144, 1)),
+                    Text(
+                      "Rizza FlowerShop",
+                      style: GoogleFonts.dancingScript(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                        color: const Color.fromRGBO(190, 54, 165, 1),
+                      ),
                     ),
                     Row(
                       children: [
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _incrementCounter,
-                          tooltip: 'Increment',
-                          child: Icon(Icons.add),
+                        IconButton(
+                          icon: const Icon(Icons.notifications, color: Color.fromRGBO(190, 54, 165, 1)),
+                          onPressed: () {},
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.shopping_cart, color: Color.fromRGBO(190, 54, 165, 1)),
+                          onPressed: () {},
                         ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("$_counter",
-                        style: GoogleFonts.inter(
-                          fontSize: 16
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5),side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _decrementCounter,
-                          tooltip: 'decrement',
-                          child: Icon(Icons.remove),
-                        ),
+                        IconButton(
+                          icon: const Icon(Icons.search, color: Color.fromRGBO(190, 54, 165, 1)),
+                          onPressed: () {},
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                CarouselSlider(
-                  items: [
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                const SizedBox(height: 40),
+                Text(
+                  "Custom Bouquet Builder",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Flowers Section
+                Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Flowers",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Flowers()));
+                            },
+                            child: Text(
+                              "view all",
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Image.asset("lib/assets/images/rainbowrose.png"),
+                          Padding(padding: EdgeInsets.only(left: 15)),
+                          Image.asset("lib/assets/images/smallvase.png")
+                        ],
                       ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                    ],
+                  ),
+                ),
+                // Packages Section
+                Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Packages",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Packages()));
+                            },
+                            child: Text(
+                              "view all",
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Image.asset("lib/assets/images/rainbowrose.png"),
+                          Padding(padding: EdgeInsets.only(left: 15)),
+                          Image.asset("lib/assets/images/smallvase.png")
+                        ],
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                    ],
+                  ),
+                ),
+                // Cards Section
+                Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Cards",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Cards()));
+                            },
+                            child: Text(
+                              "view all",
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                  options: CarouselOptions(
-                    height: 200.0,
-                    enlargeCenterPage: true,
-                    autoPlay: false,
-                    viewportFraction: 0.8,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Image.asset("lib/assets/images/rainbowrose.png"),
+                          Padding(padding: EdgeInsets.only(left: 15)),
+                          Image.asset("lib/assets/images/smallvase.png")
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          Padding(padding: EdgeInsets.only(top: 15)),
+          // Summary Section
           Container(
-            color: Color.fromRGBO(255, 227, 235, 1),
-            padding: EdgeInsets.all(30),
-            height: 350,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.pink.shade50,
+              border: const Border(top: BorderSide(color: Colors.pinkAccent)),
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  "Summary:",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 100,
+                  child: ListView(
+                    scrollDirection: Axis.vertical,
+                    children: [
+                      Text("data1"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data"),
+                      Text("data2"),
+                      
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Flowers",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromRGBO(250, 34, 144, 1),
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color.fromRGBO(250, 34, 144, 1)),
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _incrementCounter1,
-                          tooltip: 'Increment',
-                          child: Icon(Icons.add),
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("$_counter1",
-                        style: GoogleFonts.inter(
-                          fontSize: 16
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5),side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _decrementCounter1,
-                          tooltip: 'decrement',
-                          child: Icon(Icons.remove),
-                        ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                CarouselSlider(
-                  items: [
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
+                    Text(
+                      "Total: ₱999.00",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pinkAccent,
+                        padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
+                      onPressed: () {
+                      
+                      },
+                      child: Text(
+                        "Confirm",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
-                  options: CarouselOptions(
-                    height: 200.0,
-                    enlargeCenterPage: true,
-                    autoPlay: false,
-                    viewportFraction: 0.8,
-                  ),
                 ),
               ],
             ),
-          ),
-          Padding(padding: EdgeInsets.only(top: 15)),
-          Container(
-            color: Color.fromRGBO(255, 227, 235, 1),
-            padding: EdgeInsets.all(30),
-            height: 350,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Package",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromRGBO(250, 34, 144, 1),
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color.fromRGBO(250, 34, 144, 1)),
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _incrementCounter2,
-                          tooltip: 'Increment',
-                          child: Icon(Icons.add),
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("$_counter2",
-                        style: GoogleFonts.inter(
-                          fontSize: 16
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5),side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _decrementCounter2,
-                          tooltip: 'decrement',
-                          child: Icon(Icons.remove),
-                        ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                CarouselSlider(
-                  items: [
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ],
-                  options: CarouselOptions(
-                    height: 200.0,
-                    enlargeCenterPage: true,
-                    autoPlay: false,
-                    viewportFraction: 0.8,
-                  ),
-                ),
-                Text("data"),
-              ],
-            ),
-          ),
-          Padding(padding: EdgeInsets.only(top: 15)),
-          Container(
-            color: Color.fromRGBO(255, 227, 235, 1),
-            padding: EdgeInsets.all(30),
-            height: 350,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Cards",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromRGBO(250, 34, 144, 1),
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color.fromRGBO(250, 34, 144, 1)),
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5), side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _incrementCounter3,
-                          tooltip: 'Increment',
-                          child: Icon(Icons.add),
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        Text("$_counter3",
-                        style: GoogleFonts.inter(
-                          fontSize: 16
-                        ),
-                        ),
-                        Padding(padding: EdgeInsets.only(left: 10)),
-                        SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: FloatingActionButton(
-                          backgroundColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5),side: BorderSide(width: 1,color: Colors.grey)),
-                          elevation: 0,
-                          onPressed: _decrementCounter3,
-                          tooltip: 'decrement',
-                          child: Icon(Icons.remove),
-                        ),
-                        ),
-                      ],
-                    )
-    
-                  ],
-                ),
-                Padding(padding: EdgeInsets.only(top: 10)),
-                CarouselSlider(
-                  items: [
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        image: DecorationImage(
-                          image: AssetImage("lib/assets/images/redrose.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    
-                  ],
-                  options: CarouselOptions(
-                    height: 200.0,
-                    enlargeCenterPage: true,
-                    autoPlay: false,
-                    viewportFraction: 0.8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(padding: EdgeInsets.only(top: 20)),
-          Row(
-            children: [
-              Text("Price:",
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-              ),
-              Padding(padding: EdgeInsets.only(left: 230)),
-              Text("$_price PHP",
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),)
-            ],
-          ),
-          Padding(padding: EdgeInsets.only(top: 20)),
-          Row(
-            children: [
-              Text("Estimated Time:",
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-              ),
-              Padding(padding: EdgeInsets.only(left: 100)),
-              Text("$_time minutes",
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),)
-            ],
-          ),
-          Padding(padding: EdgeInsets.only(top: 20)),
-          Row(
-            children: [
-              SizedBox(
-                width: 130,
-                height: 50,
-                child: ElevatedButton(onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(190, 54, 165, 1),
-                  side: BorderSide(width: 1, color: Color.fromRGBO(190, 54, 165, 1)),
-                  padding: EdgeInsets.symmetric(vertical: 1, horizontal: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)
-                  )
-                ),
-                child: Text("Add to cart",
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Colors.white,
-                ),)),),
-              Padding(padding: EdgeInsets.only(left: 35)),
-              SizedBox(
-                width: 196,
-                height: 50,
-                child: ElevatedButton(onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-                  side: BorderSide(width: 1,color: Color.fromRGBO(190, 54, 165, 1)),
-                  padding: EdgeInsets.symmetric(vertical: 1, horizontal: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)
-                  )
-                ),
-                child: Text("Make a new Bouquet",
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Color.fromRGBO(190, 54, 165, 1),
-                ),)),),
-                Padding(padding: EdgeInsets.only(right: 10))
-            ],
           ),
         ],
       ),
