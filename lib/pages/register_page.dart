@@ -14,6 +14,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
+  final TextEditingController confirmPassword = TextEditingController();
 
   Future<void> register() async {
     final url = Uri.parse("http://10.0.2.2:8080/api/user-register");
@@ -21,7 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"email": email.text, "password": password.text}),
+      body: jsonEncode({"email": email.text, "password": password.text, "confirm_password": confirmPassword.text}),
     );
 
     final data = jsonDecode(response.body);
@@ -41,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${data["errors"]["email"]}\n${data["errors"]["password"]}',
+            '${data["errors"]["email"] ?? ""}\n${data["errors"]["password"] ?? ""}\n${data["errors"]["confirm_password"] ?? ""}',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.red,
@@ -121,6 +122,36 @@ class _RegisterPageState extends State<RegisterPage> {
             child: TextField(
               obscureText: true,
               controller: password,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                hintText: "Enter your password",
+                fillColor: Color.fromRGBO(255, 227, 235, 1),
+              ),
+            ),
+          ),
+          Padding(padding: EdgeInsets.only(top: 20)),
+          Row(
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(left: 50)),
+              Text(
+                "Confirm Password",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Color.fromRGBO(255, 105, 181, 1),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 5, left: 50, right: 50),
+            child: TextField(
+              obscureText: true,
+              controller: confirmPassword,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderSide: BorderSide.none,

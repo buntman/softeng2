@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
     } else if(data["success"] == false){ //temporary validations
       ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${data["errors"]["email"]}\n${data["errors"]["password"]}', style: TextStyle(color: Colors.white)),
+        content: Text('${data["errors"]["email"] ?? ""}\n${data["errors"]["password"] ?? ""}', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.red,
         ),
       );
